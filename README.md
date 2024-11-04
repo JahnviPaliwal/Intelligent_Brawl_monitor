@@ -58,9 +58,7 @@ The applications of this system are vast and varied:
 - **Dependence on Environmental Conditions:** Performance may be affected by factors such as lighting conditions, camera quality, or occlusions (e.g., objects blocking the view).
 - **Privacy Concerns:** Continuous monitoring raises ethical issues regarding privacy rights; individuals may feel uncomfortable being watched without consent
 ## Estimated Image Output
-
-![![Screenshot 2024-11-04 224305](https://github.com/user-attachments/assets/b4d8d72f-41cd-4fc4-a560-6f9adfc0ccfa)
-](https://via.placeholder.com/468x300?text=App+Screenshot+Here)
+![Screenshot 2024-11-04 224305](https://github.com/user-attachments/assets/b4d8d72f-41cd-4fc4-a560-6f9adfc0ccfa)
 
 
 
