@@ -76,4 +76,7 @@ Implementing techniques such as transfer learning to leverage existing models tr
 Linking the detection system with smart home devices (like alarms or cameras) for comprehensive security solutions that respond automatically to detected aggression.
 Developing mobile applications that allow users to receive alerts directly on their smartphones for immediate action.
 
+## Conclusion
+This project not only showcases the potential of AI in enhancing safety but also opens avenues for further research and development in emotion recognition technology. By continually refining the model and expanding its capabilities, we can contribute significantly to creating safer environments across various sectors.
+
 
