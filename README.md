@@ -88,4 +88,4 @@ This project not only showcases the potential of AI in enhancing safety but also
 - Biplab Das S (for courses and project support for hardware integration research) [LinkedIn link](https://www.linkedin.com/in/biplab-das-7b9870165/)
 
 ## For collab/inquiries/any questions: 
-- Mail:- paliwaljnv08@gmail.com or [LinkedIn link](https://www.linkedin.com/in/jahnvipaliwal/)
+- [Mail](mailto:paliwaljnv08@gmail.com) or [LinkedIn link](https://www.linkedin.com/in/jahnvipaliwal/)
