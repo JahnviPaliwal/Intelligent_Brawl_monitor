@@ -1,5 +1,5 @@
-# Intelligent_Brawl_monitor
-This project develops a Real-Time Facial Expression and Pose Detection System using OpenCV. The AI model identifies angry facial expressions and aggressive body poses from live camera feeds, providing timely alerts about potential conflicts to enhance safety in various environments.
+# Intelligent_Brawl_Monitor
+This project develops a Real-Time Facial Expression and Pose Detection System using OpenCV. The AI model identifies angry facial expressions and aggressive body poses from live camera feeds, providing timely alerts about potential conflicts to enhance safety in various environments. In simple words, this senses the aggression from any human being and gives an alert as an SOS to the email ids provided. 
 
 ## Objective
 
@@ -14,7 +14,7 @@ This project develops a Real-Time Facial Expression and Pose Detection System us
 
 - **Real-Time Video Processing:**
 
-  - Utilizes OpenCV to capture video from a camera in real time.
+  - Utilizes OpenCV to capture video from a camera in real-time.
   - Processes each frame to detect faces and analyze expressions.
 - **Facial Expression Recognition:**
   - Employs machine learning models trained on a diverse dataset of facial expressions.
@@ -64,7 +64,7 @@ The applications of this system are vast and varied:
 
 
 
-## Future Modifications
+## Future Modifications and Scopes
 To enhance the functionality and effectiveness of the system, several modifications and developments are planned:
 - Expansion of Dataset:
 Collecting a broader range of facial expressions and body poses from diverse demographics to improve model robustness.
@@ -75,6 +75,7 @@ Implementing techniques such as transfer learning to leverage existing models tr
 - Integration with IoT Devices:
 Linking the detection system with smart home devices (like alarms or cameras) for comprehensive security solutions that respond automatically to detected aggression.
 Developing mobile applications that allow users to receive alerts directly on their smartphones for immediate action.
+- In simple terms from an Indian perspective, motivation to alert in rural areas and women's safety. It can also be kept handy in terms of pocket-tronics for SOS and enhancing better chances of empowerment in technology and education.
 
 ## Conclusion
 This project not only showcases the potential of AI in enhancing safety but also opens avenues for further research and development in emotion recognition technology. By continually refining the model and expanding its capabilities, we can contribute significantly to creating safer environments across various sectors.
