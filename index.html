@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intelligent Brawl Monitor</title>
+  <link rel="stylesheet" href="css/style.css" />
+
+  <!-- TensorFlow.js + MoveNet MultiPose -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-core@4.17.0/dist/tf-core.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-converter@4.17.0/dist/tf-converter.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl@4.17.0/dist/tf-backend-webgl.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/pose-detection@2.1.3/dist/pose-detection.min.js"></script>
+</head>
+<body>
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">BrawlMonitor</span>
+      </div>
+
+      <nav class="nav">
+        <div class="nav-label">Dashboard</div>
+        <a href="#" class="nav-item active" data-tab="monitor">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+          Live Monitor
+        </a>
+        <a href="#" class="nav-item" data-tab="alerts">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Alert Log
+          <span class="badge" id="alertBadge" style="display:none">0</span>
+        </a>
+        <a href="#" class="nav-item" data-tab="settings">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Settings
+        </a>
+      </nav>
+
+      <div class="sidebar-metrics">
+        <div class="sm-item">
+          <span class="sm-label">Persons detected</span>
+          <span class="sm-val" id="sbPersons">—</span>
+        </div>
+        <div class="sm-item">
+          <span class="sm-label">Threat score</span>
+          <span class="sm-val" id="sbThreat">—</span>
+        </div>
+        <div class="sm-item">
+          <span class="sm-label">Total alerts</span>
+          <span class="sm-val danger" id="sbAlerts">0</span>
+        </div>
+        <div class="sm-item">
+          <span class="sm-label">Session time</span>
+          <span class="sm-val" id="sbTime">00:00</span>
+        </div>
+      </div>
+
+      <div class="sidebar-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">Offline</span>
+      </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+
+      <!-- MONITOR TAB -->
+      <div class="tab-content active" id="tab-monitor">
+        <div class="top-bar">
+          <div>
+            <h1 class="page-title">Live Monitor</h1>
+            <p class="page-sub" id="pageSubtitle">Camera offline — press Start to begin</p>
+          </div>
+          <div class="top-actions">
+            <button class="btn btn-sim" id="simBtn" onclick="triggerSimulation()">⚡ Simulate fight</button>
+            <button class="btn btn-start" id="startBtn" onclick="startMonitor()">▶ Start camera</button>
+            <button class="btn btn-stop" id="stopBtn" onclick="stopMonitor()" style="display:none">■ Stop</button>
+          </div>
+        </div>
+
+        <!-- Alert banner -->
+        <div class="alert-banner" id="alertBanner">
+          <div class="alert-banner-icon">🚨</div>
+          <div class="alert-banner-text">
+            <strong>Fight detected!</strong>
+            <span id="alertBannerDetail">Aggressive pose held — alert dispatched.</span>
+          </div>
+          <button onclick="dismissBanner()" class="alert-dismiss">✕</button>
+        </div>
+
+        <div class="monitor-grid">
+          <!-- Camera feed -->
+          <div class="feed-card">
+            <div class="feed-header">
+              <span class="feed-label">
+                <span class="rec-dot" id="recDot"></span>
+                Camera feed — MediaPipe pose detection
+              </span>
+              <span class="fps-badge" id="fpsBadge">— fps</span>
+            </div>
+            <div class="feed-wrap" id="feedWrap">
+              <video id="videoEl" autoplay muted playsinline></video>
+              <canvas id="outputCanvas"></canvas>
+              <div class="feed-placeholder" id="feedPlaceholder">
+                <svg width="48" height="48" fill="none" stroke="#555" stroke-width="1.5" viewBox="0 0 24 24"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                <p>Camera not started</p>
+                <p style="font-size:12px;color:#666;margin-top:4px">Click "Start camera" to begin monitoring</p>
+              </div>
+              <div class="feed-pills" id="feedPills" style="display:none">
+                <span class="fpill" id="pPeople">0 persons</span>
+                <span class="fpill" id="pPose">Neutral</span>
+                <span class="fpill" id="pFight">Monitoring</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metrics panel -->
+          <div class="metrics-panel">
+            <div class="metric-card">
+              <div class="mc-label">Persons in frame</div>
+              <div class="mc-val" id="mPeople">—</div>
+            </div>
+            <div class="metric-card">
+              <div class="mc-label">Wrists elevated</div>
+              <div class="mc-val" id="mWrists">—</div>
+            </div>
+            <div class="metric-card">
+              <div class="mc-label">Detected poses</div>
+              <div class="mc-val" id="mElbow" style="font-size:13px;padding-top:4px">—</div>
+            </div>
+            <div class="metric-card">
+              <div class="mc-label">Threat score</div>
+              <div class="mc-val large" id="mThreat">—</div>
+            </div>
+
+            <!-- Threat bar -->
+            <div class="threat-bar-wrap">
+              <div class="threat-bar-label">
+                <span>Threat level</span>
+                <span id="threatPct">0%</span>
+              </div>
+              <div class="threat-bar-track">
+                <div class="threat-bar-fill" id="threatFill" style="width:0%"></div>
+              </div>
+              <div class="threat-bar-labels">
+                <span>Safe</span><span>Caution</span><span>Danger</span>
+              </div>
+            </div>
+
+            <!-- Detection rules -->
+            <div class="rules-box">
+              <div class="rules-title">Trigger conditions</div>
+              <div class="rule-row" id="rule1">
+                <span class="rule-dot"></span>
+                Wrists elevated above shoulder line
+              </div>
+              <div class="rule-row" id="rule2">
+                <span class="rule-dot"></span>
+                Aggressive pose detected (Punch / Kick / Guard / Grab)
+              </div>
+              <div class="rule-row" id="rule3">
+                <span class="rule-dot"></span>
+                2 or more persons in frame
+              </div>
+              <div class="rule-row" id="rule4">
+                <span class="rule-dot"></span>
+                Aggressive pose held for N consecutive frames
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALERTS TAB -->
+      <div class="tab-content" id="tab-alerts">
+        <div class="top-bar">
+          <div>
+            <h1 class="page-title">Alert Log</h1>
+            <p class="page-sub">All dispatched notifications and system events</p>
+          </div>
+          <button class="btn" onclick="clearAlerts()">Clear log</button>
+        </div>
+        <div class="chat-wrap">
+          <div class="chat-log" id="chatLog">
+            <!-- Messages injected by JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div class="tab-content" id="tab-settings">
+        <div class="top-bar">
+          <div>
+            <h1 class="page-title">Settings</h1>
+            <p class="page-sub">Configure alert thresholds and email dispatch</p>
+          </div>
+        </div>
+        <div class="settings-grid">
+          <div class="settings-card">
+            <h3>Detection thresholds</h3>
+            <div class="field">
+              <label>Threat score to trigger alert</label>
+              <input type="range" min="0.3" max="0.95" step="0.05" value="0.65" id="setThreat" oninput="updateSettingLabel('setThreat','setThreatVal','%',100)">
+              <span class="field-val" id="setThreatVal">65%</span>
+            </div>
+            <div class="field">
+              <label>Frames required before alert</label>
+              <input type="range" min="1" max="60" step="1" value="15" id="setFrames" oninput="updateSettingLabel('setFrames','setFramesVal',' frames',1)">
+              <span class="field-val" id="setFramesVal">15 frames</span>
+            </div>
+            <div class="field">
+              <label>Wrist elevation threshold (relative to shoulder)</label>
+              <input type="range" min="0.01" max="0.15" step="0.01" value="0.05" id="setWrist" oninput="updateSettingLabel('setWrist','setWristVal','',100)">
+              <span class="field-val" id="setWristVal">0.05</span>
+            </div>
+          </div>
+          <div class="settings-card">
+            <h3>Email alert dispatch</h3>
+            <div class="field">
+              <label>Sender email (Gmail)</label>
+              <input type="email" id="setSender" placeholder="your@gmail.com" class="text-input">
+            </div>
+            <div class="field">
+              <label>App password</label>
+              <input type="password" id="setPass" placeholder="Gmail app password" class="text-input">
+            </div>
+            <div class="field">
+              <label>Recipient email</label>
+              <input type="email" id="setRecipient" placeholder="security@yourplace.com" class="text-input">
+            </div>
+            <p class="settings-note">⚠ Email dispatch requires the Python backend (backend/server.py). The frontend will call <code>POST /api/alert</code> with alert details when a fight is detected.</p>
+          </div>
+          <div class="settings-card">
+            <h3>Skeleton display</h3>
+            <div class="field checkbox-field">
+              <label><input type="checkbox" id="setShowSkel" checked> Show pose skeleton overlay</label>
+            </div>
+            <div class="field checkbox-field">
+              <label><input type="checkbox" id="setShowWrists" checked> Highlight wrists in orange</label>
+            </div>
+            <div class="field checkbox-field">
+              <label><input type="checkbox" id="setSound" checked> Play alert sound</label>
+            </div>
+            <div class="field checkbox-field">
+              <label><input type="checkbox" id="setMirror" checked> Mirror camera feed</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
